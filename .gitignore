@@ -30,8 +30,13 @@ plugins/MacAC/
 
 # Native build
 native/build/
+native/_codeql_build_dir/
+native/native
 *.so
 *.dylib
 *.dll
 *.o
 *.a
+
+# CodeQL
+_codeql_detected_source_root
