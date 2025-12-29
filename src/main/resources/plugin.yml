@@ -1,0 +1,26 @@
+name: MacAC
+version: ${version}
+main: com.macmoment.macac.MacACPlugin
+api-version: '1.20'
+description: A production-ready anti-cheat plugin with multi-layered detection
+authors:
+  - MacMoment
+softdepend:
+  - ProtocolLib
+
+permissions:
+  macac.alerts:
+    description: Receive anti-cheat alerts
+    default: op
+  macac.admin:
+    description: Full MacAC administration
+    default: op
+  macac.bypass:
+    description: Bypass all checks
+    default: false
+
+commands:
+  macac:
+    description: MacAC administration command
+    usage: /<command> [reload|status|exempt]
+    permission: macac.admin
