@@ -2,37 +2,89 @@ package com.macmoment.macac.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * JNI bridge to native helper library.
- * Provides high-performance operations:
- * - Monotonic timing via RDTSCP
- * - SIMD-optimized statistics
- * - Native ring buffer
- * - Network communication for analytics
+ * JNI bridge to optional native helper library.
  * 
- * The native library is optional - if not available, Java fallbacks are used.
+ * <p>This class provides high-performance native operations when available,
+ * with automatic fallback to pure-Java implementations when the native
+ * library is not present or fails to load.
+ * 
+ * <p><strong>Native capabilities when available:</strong>
+ * <ul>
+ *   <li>High-precision monotonic timing via RDTSCP instruction</li>
+ *   <li>SIMD-optimized statistical calculations (AVX2)</li>
+ *   <li>Native ring buffer for reduced GC pressure</li>
+ *   <li>Optimized combat angle calculations</li>
+ *   <li>Network communication for external analytics</li>
+ * </ul>
+ * 
+ * <p><strong>Platform Support:</strong>
+ * <ul>
+ *   <li>Windows (x64): macac_native.dll</li>
+ *   <li>Linux (x64): libmacac_native.so</li>
+ *   <li>macOS (x64/arm64): libmacac_native.dylib</li>
+ * </ul>
+ * 
+ * <p>The native library is completely optional. All functionality has
+ * pure-Java fallbacks that provide identical results, though potentially
+ * with higher latency or CPU usage.
+ * 
+ * <p><strong>Thread Safety:</strong> All methods are thread-safe.
+ * The library loading uses synchronized initialization.
+ * 
+ * @author MacAC Development Team
+ * @since 1.0.0
  */
 public final class NativeHelper {
     
     private static final Logger LOGGER = Logger.getLogger(NativeHelper.class.getName());
     
-    private static boolean nativeLoaded = false;
-    private static boolean loadAttempted = false;
+    /** Load state flag to prevent repeated load attempts. */
+    private static volatile boolean loadAttempted = false;
     
-    // Library names per platform
+    /** Whether native library was successfully loaded. */
+    private static volatile boolean nativeLoaded = false;
+    
+    /** Native library base name (without platform-specific extension). */
     private static final String LIB_NAME = "macac_native";
+    
+    /** Windows library file name. */
     private static final String LIB_NAME_WINDOWS = "macac_native.dll";
+    
+    /** Linux library file name. */
     private static final String LIB_NAME_LINUX = "libmacac_native.so";
+    
+    /** macOS library file name. */
     private static final String LIB_NAME_MACOS = "libmacac_native.dylib";
     
+    /** Extraction buffer size for copying library from JAR. */
+    private static final int EXTRACTION_BUFFER_SIZE = 8192;
+    
     /**
-     * Load native library if available.
-     * Safe to call multiple times - only loads once.
+     * Private constructor prevents instantiation.
+     */
+    private NativeHelper() {
+        throw new AssertionError("NativeHelper is a utility class and cannot be instantiated");
+    }
+    
+    /**
+     * Loads the native library if available.
      * 
-     * @return true if native library is loaded
+     * <p>This method is safe to call multiple times; the library is only
+     * loaded once. Subsequent calls return the cached result.
+     * 
+     * <p>Loading is attempted in this order:
+     * <ol>
+     *   <li>System library path (java.library.path)</li>
+     *   <li>Extraction from JAR resources to temp directory</li>
+     * </ol>
+     * 
+     * @return true if native library is loaded and available
      */
     public static synchronized boolean loadNativeLibrary() {
         if (loadAttempted) {
@@ -40,59 +92,76 @@ public final class NativeHelper {
         }
         loadAttempted = true;
         
+        // Try loading from system library path first
+        if (tryLoadFromSystemPath()) {
+            return true;
+        }
+        
+        // Try extracting from JAR resources
+        if (tryLoadFromResources()) {
+            return true;
+        }
+        
+        LOGGER.fine("Native library not available, using Java fallbacks");
+        return false;
+    }
+    
+    /**
+     * Attempts to load the library from the system library path.
+     */
+    private static boolean tryLoadFromSystemPath() {
         try {
-            // Try loading from java.library.path first
             System.loadLibrary(LIB_NAME);
             nativeLoaded = true;
             init();
             LOGGER.info("Native library loaded from system path");
             return true;
-        } catch (UnsatisfiedLinkError e1) {
-            // Try extracting from resources
-            try {
-                loadFromResources();
-                nativeLoaded = true;
-                init();
-                LOGGER.info("Native library loaded from resources");
-                return true;
-            } catch (Exception e2) {
-                LOGGER.fine("Native library not available, using Java fallbacks: " + e2.getMessage());
-                return false;
-            }
+        } catch (final UnsatisfiedLinkError e) {
+            LOGGER.fine("Native library not found in system path: " + e.getMessage());
+            return false;
         }
     }
     
     /**
-     * Extract and load native library from JAR resources.
+     * Attempts to load the library by extracting from JAR resources.
      */
-    private static void loadFromResources() throws Exception {
-        String osName = System.getProperty("os.name").toLowerCase();
-        String libName;
-        
-        if (osName.contains("win")) {
-            libName = LIB_NAME_WINDOWS;
-        } else if (osName.contains("mac")) {
-            libName = LIB_NAME_MACOS;
-        } else {
-            libName = LIB_NAME_LINUX;
+    private static boolean tryLoadFromResources() {
+        try {
+            loadFromResources();
+            nativeLoaded = true;
+            init();
+            LOGGER.info("Native library loaded from resources");
+            return true;
+        } catch (final Exception e) {
+            LOGGER.log(Level.FINE, "Failed to load native library from resources", e);
+            return false;
         }
+    }
+    
+    /**
+     * Extracts and loads the native library from JAR resources.
+     */
+    private static void loadFromResources() throws IOException {
+        final String osName = System.getProperty("os.name").toLowerCase();
+        final String libName = getLibraryName(osName);
+        final String resourcePath = "/native/" + libName;
         
-        String resourcePath = "/native/" + libName;
-        
-        try (InputStream in = NativeHelper.class.getResourceAsStream(resourcePath)) {
+        try (final InputStream in = NativeHelper.class.getResourceAsStream(resourcePath)) {
             if (in == null) {
-                throw new Exception("Native library not found in resources: " + resourcePath);
+                throw new IOException("Native library not found in resources: " + resourcePath);
             }
             
             // Extract to temp directory
-            File tempDir = new File(System.getProperty("java.io.tmpdir"), "macac-native");
-            tempDir.mkdirs();
+            final File tempDir = new File(System.getProperty("java.io.tmpdir"), "macac-native");
+            if (!tempDir.exists() && !tempDir.mkdirs()) {
+                throw new IOException("Failed to create temp directory: " + tempDir);
+            }
             
-            File tempLib = new File(tempDir, libName);
+            final File tempLib = new File(tempDir, libName);
             tempLib.deleteOnExit();
             
-            try (FileOutputStream out = new FileOutputStream(tempLib)) {
-                byte[] buffer = new byte[8192];
+            try (final FileOutputStream out = new FileOutputStream(tempLib)) {
+                final byte[] buffer = new byte[EXTRACTION_BUFFER_SIZE];
                 int bytesRead;
                 while ((bytesRead = in.read(buffer)) != -1) {
                     out.write(buffer, 0, bytesRead);
@@ -104,7 +173,23 @@ public final class NativeHelper {
     }
     
     /**
-     * Check if native library is available.
+     * Returns the platform-specific library file name.
+     */
+    private static String getLibraryName(final String osName) {
+        if (osName.contains("win")) {
+            return LIB_NAME_WINDOWS;
+        } else if (osName.contains("mac")) {
+            return LIB_NAME_MACOS;
+        } else {
+            return LIB_NAME_LINUX;
+        }
+    }
+    
+    /**
+     * Checks if the native library is available for use.
+     * 
+     * <p>If the library hasn't been loaded yet, this method will attempt
+     * to load it first.
      * 
      * @return true if native operations can be used
      */
@@ -120,17 +205,19 @@ public final class NativeHelper {
     // ========================================================================
     
     /**
-     * Initialize native library (calibrate TSC, etc.)
+     * Initializes the native library (calibrates TSC frequency, etc.).
      */
     private static native void init();
     
     /**
-     * Get high-precision monotonic time in nanoseconds.
+     * Returns high-precision monotonic time in nanoseconds via RDTSCP.
+     * 
+     * @return monotonic time in nanoseconds
      */
     public static native long nanoTime();
     
     /**
-     * Get raw RDTSCP value.
+     * Returns the raw RDTSCP counter value.
      */
     public static native long rdtscp();
     
