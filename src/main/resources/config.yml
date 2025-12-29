@@ -1,0 +1,136 @@
+# MacAC Configuration
+# Production-ready anti-cheat with multi-layered detection
+
+# Global thresholds
+thresholds:
+  # Confidence threshold for triggering actions (0.0-1.0)
+  # Higher = fewer false positives, lower detection rate
+  action_confidence: 0.997
+  # Minimum severity level to report (0.0-1.0)
+  min_severity: 0.3
+
+# Timing windows for exemptions and cooldowns
+windows:
+  # Exemption window after teleport/join/world change (ms)
+  exemption_ms: 250
+  # Cooldown between repeated alerts for same player (ms)
+  cooldown_ms: 1500
+  # Grace period after lag spike detection (ms)
+  lag_grace_ms: 500
+
+# History store configuration
+history:
+  # Number of samples to keep per player (ring buffer size)
+  size: 64
+
+# Individual check configuration
+checks:
+  # === Movement Checks ===
+  packet_timing:
+    enabled: true
+    # Weight for confidence aggregation
+    weight: 1.0
+    # Minimum delta (ms) between packets to consider valid
+    min_delta_ms: 5
+    # Maximum acceptable timing jitter coefficient
+    max_jitter_coefficient: 3.0
+  movement_consistency:
+    enabled: true
+    weight: 1.0
+    # Maximum horizontal speed tolerance (blocks/tick)
+    max_horiz_speed: 0.8
+    # Maximum vertical speed tolerance (blocks/tick)
+    max_vert_speed: 0.6
+    # Acceleration tolerance multiplier
+    accel_tolerance: 1.5
+  prediction_drift:
+    enabled: true
+    weight: 1.0
+    # Number of consecutive drifts required before flagging
+    min_drift_samples: 5
+    # Maximum acceptable drift distance
+    max_drift_threshold: 0.5
+  
+  # === Combat Checks ===
+  combat_aimbot:
+    enabled: true
+    weight: 1.0
+    # Maximum instant rotation to target (degrees)
+    max_snap_angle: 45.0
+    # Minimum expected aim variance (too perfect is suspicious)
+    min_aim_variance: 1.0
+    # Maximum aim accuracy before suspicious (degrees)
+    max_aim_perfection: 3.0
+  
+  combat_reach:
+    enabled: true
+    weight: 1.0
+    # Maximum allowed reach distance (blocks)
+    max_reach: 3.5
+    # Buffer for ping compensation (blocks)
+    reach_buffer: 0.3
+  
+  combat_autoclicker:
+    enabled: true
+    weight: 1.0
+    # Maximum suspicious hit rate (0.0-1.0)
+    max_hit_rate: 0.85
+    # Minimum attack interval (ms) - faster = violation
+    min_attack_interval: 40.0
+    # Maximum attack interval consistency (lower = more robotic)
+    max_interval_consistency: 0.05
+  
+  # Shared combat settings
+  combat:
+    # Minimum samples before combat analysis
+    min_samples: 10
+    # Combat history buffer size
+    history_size: 50
+
+# Action configuration
+actions:
+  alerts:
+    # Enable staff alerts
+    enabled: true
+    # Log alerts to console
+    console_log: true
+    # Alert message format (placeholders: {player}, {category}, {confidence}, {severity}, {explanation})
+    format: "&c[MacAC] &e{player} &7flagged for &f{category} &7(conf: &c{confidence}&7, sev: &e{severity}&7)"
+  punishment:
+    # Enable automatic punishments (DANGEROUS - keep off until tuned)
+    enabled: false
+    # Type: KICK, TEMP_MUTE, FLAG_ONLY
+    type: FLAG_ONLY
+    # Confidence threshold for punishment (should be higher than action_confidence)
+    threshold: 0.999
+    # Delay before punishment execution (ms) - allows manual review
+    delay_ms: 0
+
+# Exemptions and whitelist
+exemptions:
+  # UUIDs of players exempt from all checks
+  whitelist: []
+  # Automatically exempt players with specific permissions
+  bypass_permission: "macac.bypass"
+  # Exempt players in creative mode
+  exempt_creative: true
+  # Exempt players in spectator mode
+  exempt_spectator: true
+
+# Performance tuning
+performance:
+  # Maximum checks per tick per player
+  max_checks_per_tick: 10
+  # Enable async packet processing (requires ProtocolLib)
+  async_packets: true
+  # Enable debug logging (verbose)
+  debug: false
+
+# Statistics and metrics
+stats:
+  # Enable EWMA-based statistics
+  use_ewma: true
+  # EWMA alpha parameter (0.0-1.0, higher = more reactive)
+  ewma_alpha: 0.3
+  # Rolling median window size
+  median_window: 20

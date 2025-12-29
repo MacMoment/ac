@@ -1,0 +1,42 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.code-workspace
+.project
+.classpath
+.settings/
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime
+run/
+server/
+plugins/MacAC/
+
+# Native build
+native/build/
+native/_codeql_build_dir/
+native/native
+*.so
+*.dylib
+*.dll
+*.o
+*.a
+
+# CodeQL
+_codeql_detected_source_root
