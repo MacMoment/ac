@@ -177,6 +177,30 @@ macac_native/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/macac_native.dir/build.make CMakeFiles/macac_native.dir/build
 .PHONY : macac_native/fast
 
+src/combat.o: src/combat.cpp.o
+.PHONY : src/combat.o
+
+# target to build an object file
+src/combat.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/macac_native.dir/build.make CMakeFiles/macac_native.dir/src/combat.cpp.o
+.PHONY : src/combat.cpp.o
+
+src/combat.i: src/combat.cpp.i
+.PHONY : src/combat.i
+
+# target to preprocess a source file
+src/combat.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/macac_native.dir/build.make CMakeFiles/macac_native.dir/src/combat.cpp.i
+.PHONY : src/combat.cpp.i
+
+src/combat.s: src/combat.cpp.s
+.PHONY : src/combat.s
+
+# target to generate assembly for a file
+src/combat.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/macac_native.dir/build.make CMakeFiles/macac_native.dir/src/combat.cpp.s
+.PHONY : src/combat.cpp.s
+
 src/jni_bridge.o: src/jni_bridge.cpp.o
 .PHONY : src/jni_bridge.o
 
@@ -310,6 +334,9 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... macac_native"
+	@echo "... src/combat.o"
+	@echo "... src/combat.i"
+	@echo "... src/combat.s"
 	@echo "... src/jni_bridge.o"
 	@echo "... src/jni_bridge.i"
 	@echo "... src/jni_bridge.s"

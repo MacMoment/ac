@@ -1,5 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/macac_native.dir/link.d"
+  "CMakeFiles/macac_native.dir/src/combat.cpp.o"
+  "CMakeFiles/macac_native.dir/src/combat.cpp.o.d"
   "CMakeFiles/macac_native.dir/src/jni_bridge.cpp.o"
   "CMakeFiles/macac_native.dir/src/jni_bridge.cpp.o.d"
   "CMakeFiles/macac_native.dir/src/network.cpp.o"

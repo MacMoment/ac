@@ -44,9 +44,14 @@ static const double PLAYER_EYE_HEIGHT = 1.62;
 /**
  * Fast inverse square root using SSE rsqrtss instruction.
  * Provides ~11 bits of precision, sufficient for game math.
+ * Handles edge cases by falling back for invalid inputs.
  */
 __attribute__((always_inline))
 static inline float fast_rsqrt(float x) {
+    // Handle edge cases: zero, negative, NaN
+    if (x <= 0.0f || std::isnan(x) || std::isinf(x)) {
+        return x <= 0.0f ? 0.0f : x;
+    }
     float result;
     __asm__ __volatile__(
         "rsqrtss %1, %0"
@@ -58,9 +63,14 @@ static inline float fast_rsqrt(float x) {
 
 /**
  * Fast square root using SSE sqrtss instruction.
+ * Handles edge cases by falling back for invalid inputs.
  */
 __attribute__((always_inline))
 static inline float fast_sqrt(float x) {
+    // Handle edge cases
+    if (x < 0.0f) {
+        return 0.0f;
+    }
     float result;
     __asm__ __volatile__(
         "sqrtss %1, %0"
@@ -298,6 +308,12 @@ void macac_analyze_combat(const double* aim_errors, const double* snap_angles,
                           macac_combat_analysis_t* result) {
     if (!result || count < 5) {
         if (result) memset(result, 0, sizeof(macac_combat_analysis_t));
+        return;
+    }
+    
+    // Validate all input pointers
+    if (!aim_errors || !snap_angles || !reaches || !attack_intervals || !hits) {
+        memset(result, 0, sizeof(macac_combat_analysis_t));
         return;
     }
     

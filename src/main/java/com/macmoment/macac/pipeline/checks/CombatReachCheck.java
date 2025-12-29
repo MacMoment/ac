@@ -1,6 +1,7 @@
 package com.macmoment.macac.pipeline.checks;
 
 import com.macmoment.macac.config.EngineConfig;
+import com.macmoment.macac.model.CombatCheckResult;
 import com.macmoment.macac.model.CombatContext;
 import com.macmoment.macac.model.CombatInput;
 import com.macmoment.macac.util.Stats;
@@ -157,25 +158,5 @@ public final class CombatReachCheck {
         explain.put("adjustedMaxReach", adjustedMaxReach);
         
         return CombatCheckResult.violation(NAME, confidence, severity, explain);
-    }
-    
-    /**
-     * Result of reach analysis.
-     */
-    public record CombatCheckResult(
-        String checkName,
-        double confidence,
-        double severity,
-        Map<String, Object> explanation,
-        boolean isViolation
-    ) {
-        public static CombatCheckResult clean(String name) {
-            return new CombatCheckResult(name, 0.0, 0.0, Map.of(), false);
-        }
-        
-        public static CombatCheckResult violation(String name, double confidence, 
-                                                  double severity, Map<String, Object> explain) {
-            return new CombatCheckResult(name, confidence, severity, explain, true);
-        }
     }
 }

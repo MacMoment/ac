@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/runner/work/ac/ac/native/src/combat.cpp" "CMakeFiles/macac_native.dir/src/combat.cpp.o" "gcc" "CMakeFiles/macac_native.dir/src/combat.cpp.o.d"
   "/home/runner/work/ac/ac/native/src/jni_bridge.cpp" "CMakeFiles/macac_native.dir/src/jni_bridge.cpp.o" "gcc" "CMakeFiles/macac_native.dir/src/jni_bridge.cpp.o.d"
   "/home/runner/work/ac/ac/native/src/network.cpp" "CMakeFiles/macac_native.dir/src/network.cpp.o" "gcc" "CMakeFiles/macac_native.dir/src/network.cpp.o.d"
   "/home/runner/work/ac/ac/native/src/ringbuffer.cpp" "CMakeFiles/macac_native.dir/src/ringbuffer.cpp.o" "gcc" "CMakeFiles/macac_native.dir/src/ringbuffer.cpp.o.d"

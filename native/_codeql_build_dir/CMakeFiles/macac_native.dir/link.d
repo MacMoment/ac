@@ -5,6 +5,7 @@ libmacac_native.so: \
   CMakeFiles/macac_native.dir/src/ringbuffer.cpp.o \
   CMakeFiles/macac_native.dir/src/stats.cpp.o \
   CMakeFiles/macac_native.dir/src/network.cpp.o \
+  CMakeFiles/macac_native.dir/src/combat.cpp.o \
   CMakeFiles/macac_native.dir/src/jni_bridge.cpp.o \
   /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/libpthread.a \
   /usr/lib/gcc/x86_64-linux-gnu/13/libstdc++.so \
@@ -43,6 +44,8 @@ CMakeFiles/macac_native.dir/src/ringbuffer.cpp.o:
 CMakeFiles/macac_native.dir/src/stats.cpp.o:
 
 CMakeFiles/macac_native.dir/src/network.cpp.o:
+
+CMakeFiles/macac_native.dir/src/combat.cpp.o:
 
 CMakeFiles/macac_native.dir/src/jni_bridge.cpp.o:
 
