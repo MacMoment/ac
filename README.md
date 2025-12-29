@@ -12,6 +12,16 @@ A production-ready anti-cheat plugin for Paper (1.20.1+) with multi-layered dete
 - **Network Analytics**: Optional centralized violation reporting via TCP
 - **Modular Architecture**: Easy to extend with custom checks
 
+### Movement Detection
+- **PacketTimingCheck**: Detects burst patterns and timing anomalies
+- **MovementConsistencyCheck**: Validates physics and speed limits
+- **PredictionDriftCheck**: Tracks movement prediction accuracy
+
+### Combat Detection
+- **CombatAimbotCheck**: Detects aimbot via snap angles, aim consistency, and robotic patterns
+- **CombatReachCheck**: Detects reach hacks with ping-compensated distance validation
+- **CombatAutoClickerCheck**: Detects killaura and auto-clickers via hit rates, attack intervals, and pattern analysis
+
 ## Requirements
 
 - Paper 1.20.1 or higher
@@ -55,6 +65,28 @@ The optional native library provides:
 - **AVX2 SIMD Statistics**: Vectorized sum, mean, and variance calculations
 - **Lock-free Ring Buffer**: High-performance per-player history storage
 - **Native Networking**: Low-overhead TCP for analytics server communication
+- **Combat Math**: Fast distance and angle calculations with SSE/AVX optimizations
+
+### Combat Analysis Functions
+
+The native library includes assembly-optimized combat math:
+
+```cpp
+// SIMD-optimized distance calculation
+double macac_distance_3d(double x1, double y1, double z1,
+                         double x2, double y2, double z2);
+
+// Aim angle calculations
+void macac_calc_aim_angles(double attackerX, double attackerY, double attackerZ,
+                           double targetX, double targetY, double targetZ,
+                           double* out_yaw, double* out_pitch);
+
+// Combat pattern analysis (aimbot, reach, autoclicker detection)
+void macac_analyze_combat(const double* aim_errors, const double* snap_angles,
+                          const double* reaches, const double* attack_intervals,
+                          const double* hits, size_t count,
+                          macac_combat_analysis_t* result);
+```
 
 The plugin automatically detects and uses the native library if available, falling back to pure Java implementations otherwise.
 

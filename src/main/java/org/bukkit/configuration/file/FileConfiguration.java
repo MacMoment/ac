@@ -39,6 +39,31 @@ public class FileConfiguration {
         values.put("checks.prediction_drift.weight", 1.0);
         values.put("checks.prediction_drift.min_drift_samples", 5);
         values.put("checks.prediction_drift.max_drift_threshold", 0.5);
+        
+        // Combat checks - Aimbot
+        values.put("checks.combat_aimbot.enabled", true);
+        values.put("checks.combat_aimbot.weight", 1.0);
+        values.put("checks.combat_aimbot.max_snap_angle", 45.0);
+        values.put("checks.combat_aimbot.min_aim_variance", 1.0);
+        values.put("checks.combat_aimbot.max_aim_perfection", 3.0);
+        
+        // Combat checks - Reach
+        values.put("checks.combat_reach.enabled", true);
+        values.put("checks.combat_reach.weight", 1.0);
+        values.put("checks.combat_reach.max_reach", 3.5);
+        values.put("checks.combat_reach.reach_buffer", 0.3);
+        
+        // Combat checks - Auto-clicker/Killaura
+        values.put("checks.combat_autoclicker.enabled", true);
+        values.put("checks.combat_autoclicker.weight", 1.0);
+        values.put("checks.combat_autoclicker.max_hit_rate", 0.85);
+        values.put("checks.combat_autoclicker.min_attack_interval", 40.0);
+        values.put("checks.combat_autoclicker.max_interval_consistency", 0.05);
+        
+        // Combat shared settings
+        values.put("checks.combat.min_samples", 10);
+        values.put("checks.combat.history_size", 50);
+        
         values.put("actions.alerts.enabled", true);
         values.put("actions.alerts.console_log", true);
         values.put("actions.alerts.format", "&c[MacAC] &e{player} &7flagged for &f{category}");

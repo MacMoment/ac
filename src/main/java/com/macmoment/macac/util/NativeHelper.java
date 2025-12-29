@@ -308,4 +308,105 @@ public final class NativeHelper {
         }
         return Stats.mean(data);
     }
+    
+    // ========================================================================
+    // Combat Analysis Native Methods
+    // ========================================================================
+    
+    /**
+     * Calculate 3D Euclidean distance using SIMD.
+     */
+    public static native double distance3D(double x1, double y1, double z1,
+                                           double x2, double y2, double z2);
+    
+    /**
+     * Calculate horizontal (XZ plane) distance.
+     */
+    public static native double distanceHorizontal(double x1, double z1,
+                                                   double x2, double z2);
+    
+    /**
+     * Calculate expected aim angles to a target.
+     * @return Array [yaw, pitch] in degrees
+     */
+    public static native double[] calcAimAngles(double attackerX, double attackerY, double attackerZ,
+                                                double targetX, double targetY, double targetZ);
+    
+    /**
+     * Calculate aim error (angular difference).
+     * @return Error in degrees
+     */
+    public static native double calcAimError(double actualYaw, double actualPitch,
+                                             double expectedYaw, double expectedPitch);
+    
+    /**
+     * Calculate snap angle (rotation change between frames).
+     * @return Angle in degrees
+     */
+    public static native double calcSnapAngle(double prevYaw, double prevPitch,
+                                              double currYaw, double currPitch);
+    
+    /**
+     * Analyze combat data for cheating patterns.
+     * @param aimErrors Array of aim error values
+     * @param snapAngles Array of snap angle values
+     * @param reaches Array of reach distances
+     * @param attackIntervals Array of attack intervals in ms
+     * @param hits Array of hit flags (1.0 = hit, 0.0 = miss)
+     * @return Analysis result array [aimbot_conf, reach_conf, autoclicker_conf, combined_conf,
+     *         avg_aim_error, aim_variance, avg_snap, avg_reach, hit_rate, avg_interval]
+     */
+    public static native double[] analyzeCombat(double[] aimErrors, double[] snapAngles,
+                                                double[] reaches, double[] attackIntervals,
+                                                double[] hits);
+    
+    // ========================================================================
+    // Combat Analysis Fallback Methods
+    // ========================================================================
+    
+    /**
+     * Calculate 3D distance using native or Java fallback.
+     */
+    public static double getDistance3D(double x1, double y1, double z1,
+                                       double x2, double y2, double z2) {
+        if (nativeLoaded) {
+            return distance3D(x1, y1, z1, x2, y2, z2);
+        }
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double dz = z2 - z1;
+        return Math.sqrt(dx*dx + dy*dy + dz*dz);
+    }
+    
+    /**
+     * Calculate aim error using native or Java fallback.
+     */
+    public static double getAimError(double actualYaw, double actualPitch,
+                                     double expectedYaw, double expectedPitch) {
+        if (nativeLoaded) {
+            return calcAimError(actualYaw, actualPitch, expectedYaw, expectedPitch);
+        }
+        // Java fallback
+        double yawDiff = actualYaw - expectedYaw;
+        while (yawDiff > 180.0) yawDiff -= 360.0;
+        while (yawDiff < -180.0) yawDiff += 360.0;
+        double pitchDiff = actualPitch - expectedPitch;
+        return Math.sqrt(yawDiff * yawDiff + pitchDiff * pitchDiff);
+    }
+    
+    /**
+     * Calculate snap angle using native or Java fallback.
+     */
+    public static double getSnapAngle(double prevYaw, double prevPitch,
+                                      double currYaw, double currPitch) {
+        if (nativeLoaded) {
+            return calcSnapAngle(prevYaw, prevPitch, currYaw, currPitch);
+        }
+        // Java fallback
+        double yawDiff = currYaw - prevYaw;
+        while (yawDiff > 180.0) yawDiff -= 360.0;
+        while (yawDiff < -180.0) yawDiff += 360.0;
+        double pitchDiff = currPitch - prevPitch;
+        return Math.sqrt(yawDiff * yawDiff + pitchDiff * pitchDiff);
+    }
 }

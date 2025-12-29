@@ -66,6 +66,27 @@ public final class EngineConfig {
     // Stats
     private boolean useEwma;
     private double ewmaAlpha;
+    
+    // Combat checks
+    private boolean combatAimbotEnabled;
+    private double combatAimbotWeight;
+    private double combatMaxSnapAngle;
+    private double combatMinAimVariance;
+    private double combatMaxAimPerfection;
+    
+    private boolean combatReachEnabled;
+    private double combatReachWeight;
+    private double combatMaxReach;
+    private double combatReachBuffer;
+    
+    private boolean combatAutoClickerEnabled;
+    private double combatAutoClickerWeight;
+    private double combatMaxHitRate;
+    private double combatMinAttackInterval;
+    private double combatMaxIntervalConsistency;
+    
+    private int combatMinSamples;
+    private int combatHistorySize;
 
     /**
      * Loads configuration from the plugin's config.yml.
@@ -145,6 +166,30 @@ public final class EngineConfig {
         ec.useEwma = config.getBoolean("stats.use_ewma", true);
         ec.ewmaAlpha = clamp(config.getDouble("stats.ewma_alpha", 0.3), 0.01, 1.0);
         
+        // Combat checks - Aimbot
+        ec.combatAimbotEnabled = config.getBoolean("checks.combat_aimbot.enabled", true);
+        ec.combatAimbotWeight = clamp(config.getDouble("checks.combat_aimbot.weight", 1.0), 0.0, 10.0);
+        ec.combatMaxSnapAngle = config.getDouble("checks.combat_aimbot.max_snap_angle", 45.0);
+        ec.combatMinAimVariance = config.getDouble("checks.combat_aimbot.min_aim_variance", 1.0);
+        ec.combatMaxAimPerfection = config.getDouble("checks.combat_aimbot.max_aim_perfection", 3.0);
+        
+        // Combat checks - Reach
+        ec.combatReachEnabled = config.getBoolean("checks.combat_reach.enabled", true);
+        ec.combatReachWeight = clamp(config.getDouble("checks.combat_reach.weight", 1.0), 0.0, 10.0);
+        ec.combatMaxReach = config.getDouble("checks.combat_reach.max_reach", 3.5);
+        ec.combatReachBuffer = config.getDouble("checks.combat_reach.reach_buffer", 0.3);
+        
+        // Combat checks - Auto-clicker/Killaura
+        ec.combatAutoClickerEnabled = config.getBoolean("checks.combat_autoclicker.enabled", true);
+        ec.combatAutoClickerWeight = clamp(config.getDouble("checks.combat_autoclicker.weight", 1.0), 0.0, 10.0);
+        ec.combatMaxHitRate = clamp(config.getDouble("checks.combat_autoclicker.max_hit_rate", 0.85), 0.0, 1.0);
+        ec.combatMinAttackInterval = config.getDouble("checks.combat_autoclicker.min_attack_interval", 40.0);
+        ec.combatMaxIntervalConsistency = config.getDouble("checks.combat_autoclicker.max_interval_consistency", 0.05);
+        
+        // Combat shared settings
+        ec.combatMinSamples = Math.max(3, config.getInt("checks.combat.min_samples", 10));
+        ec.combatHistorySize = Math.max(10, config.getInt("checks.combat.history_size", 50));
+        
         return ec;
     }
 
@@ -198,4 +243,28 @@ public final class EngineConfig {
     
     public boolean isUseEwma() { return useEwma; }
     public double getEwmaAlpha() { return ewmaAlpha; }
+    
+    // Combat check getters - Aimbot
+    public boolean isCombatAimbotEnabled() { return combatAimbotEnabled; }
+    public double getCombatAimbotWeight() { return combatAimbotWeight; }
+    public double getCombatMaxSnapAngle() { return combatMaxSnapAngle; }
+    public double getCombatMinAimVariance() { return combatMinAimVariance; }
+    public double getCombatMaxAimPerfection() { return combatMaxAimPerfection; }
+    
+    // Combat check getters - Reach
+    public boolean isCombatReachEnabled() { return combatReachEnabled; }
+    public double getCombatReachWeight() { return combatReachWeight; }
+    public double getCombatMaxReach() { return combatMaxReach; }
+    public double getCombatReachBuffer() { return combatReachBuffer; }
+    
+    // Combat check getters - Auto-clicker/Killaura
+    public boolean isCombatAutoClickerEnabled() { return combatAutoClickerEnabled; }
+    public double getCombatAutoClickerWeight() { return combatAutoClickerWeight; }
+    public double getCombatMaxHitRate() { return combatMaxHitRate; }
+    public double getCombatMinAttackInterval() { return combatMinAttackInterval; }
+    public double getCombatMaxIntervalConsistency() { return combatMaxIntervalConsistency; }
+    
+    // Combat shared settings
+    public int getCombatMinSamples() { return combatMinSamples; }
+    public int getCombatHistorySize() { return combatHistorySize; }
 }

@@ -259,6 +259,138 @@ JNIEXPORT jboolean JNICALL Java_com_macmoment_macac_util_NativeHelper_netIsConne
     return macac_net_is_connected(conn) ? JNI_TRUE : JNI_FALSE;
 }
 
+// ============================================================================
+// JNI Combat Analysis Functions
+// ============================================================================
+
+/**
+ * Calculate 3D distance.
+ */
+JNIEXPORT jdouble JNICALL Java_com_macmoment_macac_util_NativeHelper_distance3D
+  (JNIEnv *env, jclass clazz, 
+   jdouble x1, jdouble y1, jdouble z1,
+   jdouble x2, jdouble y2, jdouble z2) {
+    return macac_distance_3d(x1, y1, z1, x2, y2, z2);
+}
+
+/**
+ * Calculate horizontal distance.
+ */
+JNIEXPORT jdouble JNICALL Java_com_macmoment_macac_util_NativeHelper_distanceHorizontal
+  (JNIEnv *env, jclass clazz,
+   jdouble x1, jdouble z1, jdouble x2, jdouble z2) {
+    return macac_distance_horizontal(x1, z1, x2, z2);
+}
+
+/**
+ * Calculate aim angles to target.
+ * Returns array [yaw, pitch].
+ */
+JNIEXPORT jdoubleArray JNICALL Java_com_macmoment_macac_util_NativeHelper_calcAimAngles
+  (JNIEnv *env, jclass clazz,
+   jdouble attackerX, jdouble attackerY, jdouble attackerZ,
+   jdouble targetX, jdouble targetY, jdouble targetZ) {
+    
+    double yaw, pitch;
+    macac_calc_aim_angles(attackerX, attackerY, attackerZ,
+                          targetX, targetY, targetZ,
+                          &yaw, &pitch);
+    
+    jdoubleArray result = env->NewDoubleArray(2);
+    if (result) {
+        jdouble values[2] = { yaw, pitch };
+        env->SetDoubleArrayRegion(result, 0, 2, values);
+    }
+    return result;
+}
+
+/**
+ * Calculate aim error between actual and expected aim.
+ */
+JNIEXPORT jdouble JNICALL Java_com_macmoment_macac_util_NativeHelper_calcAimError
+  (JNIEnv *env, jclass clazz,
+   jdouble actualYaw, jdouble actualPitch,
+   jdouble expectedYaw, jdouble expectedPitch) {
+    return macac_calc_aim_error(actualYaw, actualPitch, expectedYaw, expectedPitch);
+}
+
+/**
+ * Calculate snap angle (rotation change).
+ */
+JNIEXPORT jdouble JNICALL Java_com_macmoment_macac_util_NativeHelper_calcSnapAngle
+  (JNIEnv *env, jclass clazz,
+   jdouble prevYaw, jdouble prevPitch,
+   jdouble currYaw, jdouble currPitch) {
+    return macac_calc_snap_angle(prevYaw, prevPitch, currYaw, currPitch);
+}
+
+/**
+ * Analyze combat data for cheating patterns.
+ * Returns array [aimbot_conf, reach_conf, autoclicker_conf, combined_conf,
+ *                avg_aim_error, aim_variance, avg_snap, avg_reach, hit_rate, avg_interval]
+ */
+JNIEXPORT jdoubleArray JNICALL Java_com_macmoment_macac_util_NativeHelper_analyzeCombat
+  (JNIEnv *env, jclass clazz,
+   jdoubleArray aimErrors, jdoubleArray snapAngles, jdoubleArray reaches,
+   jdoubleArray attackIntervals, jdoubleArray hits) {
+    
+    if (!aimErrors || !snapAngles || !reaches || !attackIntervals || !hits) {
+        return nullptr;
+    }
+    
+    jsize count = env->GetArrayLength(aimErrors);
+    if (count < 5) {
+        return nullptr;
+    }
+    
+    // Get array elements
+    jdouble* aimErrorsData = env->GetDoubleArrayElements(aimErrors, NULL);
+    jdouble* snapAnglesData = env->GetDoubleArrayElements(snapAngles, NULL);
+    jdouble* reachesData = env->GetDoubleArrayElements(reaches, NULL);
+    jdouble* intervalsData = env->GetDoubleArrayElements(attackIntervals, NULL);
+    jdouble* hitsData = env->GetDoubleArrayElements(hits, NULL);
+    
+    if (!aimErrorsData || !snapAnglesData || !reachesData || !intervalsData || !hitsData) {
+        if (aimErrorsData) env->ReleaseDoubleArrayElements(aimErrors, aimErrorsData, JNI_ABORT);
+        if (snapAnglesData) env->ReleaseDoubleArrayElements(snapAngles, snapAnglesData, JNI_ABORT);
+        if (reachesData) env->ReleaseDoubleArrayElements(reaches, reachesData, JNI_ABORT);
+        if (intervalsData) env->ReleaseDoubleArrayElements(attackIntervals, intervalsData, JNI_ABORT);
+        if (hitsData) env->ReleaseDoubleArrayElements(hits, hitsData, JNI_ABORT);
+        return nullptr;
+    }
+    
+    // Perform analysis
+    macac_combat_analysis_t analysis;
+    macac_analyze_combat(aimErrorsData, snapAnglesData, reachesData,
+                         intervalsData, hitsData, (size_t)count, &analysis);
+    
+    // Release arrays
+    env->ReleaseDoubleArrayElements(aimErrors, aimErrorsData, JNI_ABORT);
+    env->ReleaseDoubleArrayElements(snapAngles, snapAnglesData, JNI_ABORT);
+    env->ReleaseDoubleArrayElements(reaches, reachesData, JNI_ABORT);
+    env->ReleaseDoubleArrayElements(attackIntervals, intervalsData, JNI_ABORT);
+    env->ReleaseDoubleArrayElements(hits, hitsData, JNI_ABORT);
+    
+    // Create result array
+    jdoubleArray result = env->NewDoubleArray(10);
+    if (result) {
+        jdouble values[10] = {
+            analysis.aimbot_confidence,
+            analysis.reach_confidence,
+            analysis.autoclicker_confidence,
+            analysis.combined_confidence,
+            analysis.avg_aim_error,
+            analysis.aim_variance,
+            analysis.avg_snap_angle,
+            analysis.avg_reach,
+            analysis.hit_rate,
+            analysis.avg_attack_interval
+        };
+        env->SetDoubleArrayRegion(result, 0, 10, values);
+    }
+    return result;
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -25,6 +25,7 @@ set(SOURCES
     src/ringbuffer.cpp
     src/stats.cpp
     src/network.cpp
+    src/combat.cpp
     src/jni_bridge.cpp
 )
 

@@ -157,6 +157,80 @@ void macac_net_close(macac_connection_t* conn);
  */
 int macac_net_is_connected(macac_connection_t* conn);
 
+// ============================================================================
+// Combat Analysis Functions
+// ============================================================================
+
+/**
+ * Calculate 3D Euclidean distance.
+ */
+double macac_distance_3d(double x1, double y1, double z1,
+                         double x2, double y2, double z2);
+
+/**
+ * Calculate horizontal (XZ plane) distance.
+ */
+double macac_distance_horizontal(double x1, double z1, double x2, double z2);
+
+/**
+ * Batch calculate distances using SIMD.
+ * coords layout: [x1,y1,z1,x2,y2,z2] per element
+ */
+void macac_batch_distance_3d(const double* coords, double* distances, size_t count);
+
+/**
+ * Calculate yaw angle from direction vector.
+ */
+double macac_calc_yaw(double dx, double dz);
+
+/**
+ * Calculate pitch angle from direction vector.
+ */
+double macac_calc_pitch(double dx, double dy, double dz);
+
+/**
+ * Calculate expected aim angles to a target.
+ */
+void macac_calc_aim_angles(double attacker_x, double attacker_y, double attacker_z,
+                           double target_x, double target_y, double target_z,
+                           double* out_yaw, double* out_pitch);
+
+/**
+ * Calculate aim error (angular difference).
+ */
+double macac_calc_aim_error(double actual_yaw, double actual_pitch,
+                            double expected_yaw, double expected_pitch);
+
+/**
+ * Calculate snap angle (rotation change).
+ */
+double macac_calc_snap_angle(double prev_yaw, double prev_pitch,
+                             double curr_yaw, double curr_pitch);
+
+/**
+ * Combat analysis results structure.
+ */
+typedef struct {
+    double aimbot_confidence;
+    double reach_confidence;
+    double autoclicker_confidence;
+    double combined_confidence;
+    double avg_aim_error;
+    double aim_variance;
+    double avg_snap_angle;
+    double avg_reach;
+    double hit_rate;
+    double avg_attack_interval;
+} macac_combat_analysis_t;
+
+/**
+ * Analyze combat data for cheating patterns.
+ */
+void macac_analyze_combat(const double* aim_errors, const double* snap_angles,
+                          const double* reaches, const double* attack_intervals,
+                          const double* hits, size_t count,
+                          macac_combat_analysis_t* result);
+
 #ifdef __cplusplus
 }
 #endif

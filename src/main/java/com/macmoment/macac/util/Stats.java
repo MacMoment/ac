@@ -263,6 +263,36 @@ public final class Stats {
         public double stdDev() {
             return Stats.stdDev(toArray());
         }
+        
+        /**
+         * Returns the minimum value in the window.
+         * 
+         * @return Minimum value, or 0 if empty
+         */
+        public double min() {
+            if (size == 0) return 0.0;
+            double[] arr = toArray();
+            double min = Double.MAX_VALUE;
+            for (double v : arr) {
+                if (v < min) min = v;
+            }
+            return min;
+        }
+        
+        /**
+         * Returns the maximum value in the window.
+         * 
+         * @return Maximum value, or 0 if empty
+         */
+        public double max() {
+            if (size == 0) return 0.0;
+            double[] arr = toArray();
+            double max = Double.MIN_VALUE;
+            for (double v : arr) {
+                if (v > max) max = v;
+            }
+            return max;
+        }
     }
 
     /**
